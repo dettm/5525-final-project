@@ -1,7 +1,7 @@
 The resources for this dataset can be found at https://www.openml.org/d/44
 
 Author: Mark Hopkins, Erik Reeber, George Forman, Jaap Suermondt    
-Source: [UCI](https://archive.ics.uci.edu/ml/datasets/spambase)   
+Source: [UCI](https://archive.ics.uci.edu/ml/datasets/spambase)
 Please cite: [UCI](https://archive.ics.uci.edu/ml/citation_policy.html)
 
 SPAM E-mail Database  

@@ -7,11 +7,10 @@ Original file is located at
     https://colab.research.google.com/drive/1AOUVzr9OHC34gMMZDIHoR2_Eb4zsmY63
 """
 
-#from google.colab import drive
+# from google.colab import drive
 # drive.mount('/content/drive')
 
 import os
-
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -23,7 +22,6 @@ import re
 import string
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
 
-
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline
@@ -32,63 +30,54 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support as score
 from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
 
 import numpy as np
 from collections import Counter
 import time
 from statistics import mean
 
-from sklearn.metrics import accuracy_score
+from RecurrentNeuralNetwork import *
 
-df = pd.read_csv (r'data/spam.csv', encoding = "latin-1")
+df = pd.read_csv(r'data/spam.csv', encoding="latin-1")
 
 ## Another dataset, may be we could use different dataset just to add complexity in our project and compare the results between them ?
 # This file is in the spambase folder, data description can be found in the same folder in README file.
 
-spambase_dataset = pd.read_csv (r'data/spambase_csv.csv', encoding = "latin-1")
+spambase_dataset = pd.read_csv(r'data/spambase_csv.csv', encoding="latin-1")
 
-spambase_dataset
-
-df
-
-df=df.dropna(axis=1)
-
-df
-
-df= df.rename(columns={"v1": "label", "v2": "text"})
-
-df
-
+df = df.dropna(axis=1)
+df = df.rename(columns={"v1": "label", "v2": "text"})
 df['label'].unique()
 
 ## number of spam labeled text
-len(df[df.label=="spam"])
+len(df[df.label == "spam"])
 
 ## number of ham labeled text
-len(df[df.label=="ham"])
+len(df[df.label == "ham"])
 
-#missing values
+# missing values
 df.isnull().sum()
 
 """**Feature Engineering**"""
 
-#Text length
-def text_length(text):
-  return len(text)- text.count(" ")
 
-df['text_length']= df.text.apply(lambda x: text_length(x))
+# Text length
+def text_length(text):
+    return len(text) - text.count(" ")
+
+
+df['text_length'] = df.text.apply(lambda x: text_length(x))
+
 
 # Count Punctuation percentage
 
 def count_punct(text):
     count = sum([1 for char in text if char in string.punctuation])
-    return round(count/(len(text) - text.count(" ")), 3) * 100
+    return round(count / (len(text) - text.count(" ")), 3) * 100
 
 
-df['punctuation']= df.text.apply(lambda x: count_punct(x))
-
-df
-
+df['punctuation'] = df.text.apply(lambda x: count_punct(x))
 df['text_length'].hist(bins=100)
 
 """**Analyzing data**"""
@@ -96,33 +85,33 @@ df['text_length'].hist(bins=100)
 # convert text to lower case, later can be tokenized
 df['processed_text'] = df['text'].str.lower()
 
+
 def remove_punctuations(text):
     for punctuation in string.punctuation:
         text = text.replace(punctuation, '')
     return text
 
-df["processed_text"] = df['processed_text'].apply(remove_punctuations)
 
-df
+df["processed_text"] = df['processed_text'].apply(remove_punctuations)
 
 # remove the stopwords, may need to define our own stopwords later
 from nltk.corpus import stopwords
+
 # import nltk
 nltk.download('stopwords')
 stop = stopwords.words('english')
 
-df["processed_text"]= df["processed_text"].apply(lambda words: ' '.join(word.lower() for word in words.split() if word not in stop))
+df["processed_text"] = df["processed_text"].apply(
+    lambda words: ' '.join(word.lower() for word in words.split() if word not in stop))
 
-df
+other_stopwords = ['u', 'im', '2', 'ur', 'ill', '4', 'lor', 'r', 'n', 'da', 'oh']
 
-other_stopwords= ['u', 'im', '2', 'ur', 'ill', '4', 'lor', 'r', 'n', 'da', 'oh']
-
-df["processed_text"]= df["processed_text"].apply(lambda words: ' '.join(word.lower() for word in words.split() if word not in other_stopwords))
-
-df
+df["processed_text"] = df["processed_text"].apply(
+    lambda words: ' '.join(word.lower() for word in words.split() if word not in other_stopwords))
 
 # tokenize text
 import nltk
+
 nltk.download('punkt')
 df['processed_text'] = df.apply(lambda row: nltk.word_tokenize(row['processed_text']), axis=1)
 
@@ -139,7 +128,7 @@ ham_words = Counter(ham_words)
 spam_words = list(df.loc[df.label == 'spam', 'processed_text'])
 
 # Flatten list of lists
-spam_words= list(np.concatenate(spam_words).flat)
+spam_words = list(np.concatenate(spam_words).flat)
 
 # Create dictionary to store word frequency
 spam_words = Counter(spam_words)
@@ -148,17 +137,15 @@ spam_words = Counter(spam_words)
 ham_words = list(df.loc[df.label == 'ham', 'processed_text'])
 ham_words = list(np.concatenate(ham_words).flat)
 ham_words = Counter(ham_words)
-ham_words = pd.DataFrame(ham_words.most_common(50), columns = ['ham_word', 'frequency'])
+ham_words = pd.DataFrame(ham_words.most_common(50), columns=['ham_word', 'frequency'])
 
 # 50 most common spam words
 spam_words = list(df.loc[df.label == 'spam', 'processed_text'])
 spam_words = list(np.concatenate(spam_words).flat)
 spam_words = Counter(spam_words)
-spam_words = pd.DataFrame(spam_words.most_common(50), columns = ['spam_word', 'frequency'])
+spam_words = pd.DataFrame(spam_words.most_common(50), columns=['spam_word', 'frequency'])
 
 """Plot most common ham and spam words"""
-
-
 
 ham_words.plot(x="ham_word", y="frequency", kind="bar", width=0.7, align='center')
 
@@ -174,14 +161,9 @@ plt.ylabel("frequency")
 
 result = pd.concat([ham_words, spam_words], axis=1, join='inner')
 
-## 50 most common ham and spam words with frequency
-result
-
 """# **Make data ready for modeling**"""
 
 x_train, x_test, y_train, y_test = train_test_split(df[['text', 'text_length', 'punctuation']], df.label, test_size=0.2, random_state=42)
-
-x_train.shape, x_test.shape, y_train.shape, y_test.shape
 
 # TfidfVectorizer, can be used other vectorization process
 tfidf_vect = TfidfVectorizer()
@@ -191,29 +173,31 @@ tfidf_train = tfidf_vect.transform(x_train['text'])
 tfidf_test = tfidf_vect.transform(x_test['text'])
 
 # Recombine transformed body text with body_len and punct% features
-x_train = pd.concat([x_train[['text_length', 'punctuation']].reset_index(drop = True), pd.DataFrame(tfidf_train.toarray())], axis = 1)
-x_test = pd.concat([x_test[['text_length', 'punctuation']].reset_index(drop = True), pd.DataFrame(tfidf_test.toarray())], axis = 1)
+x_train = pd.concat(
+    [x_train[['text_length', 'punctuation']].reset_index(drop=True), pd.DataFrame(tfidf_train.toarray())], axis=1)
+x_test = pd.concat([x_test[['text_length', 'punctuation']].reset_index(drop=True), pd.DataFrame(tfidf_test.toarray())], axis=1)
 
 """# **Gradient Boosting**"""
 
 ## rather than using just one iteration, using 5 iteration and average the accuracy result for better result
 
-gb_accuracy=[]
-total_time=[]
+gb_accuracy = []
+total_time = []
 for i in range(5):
-  model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0).fit(x_train, y_train)
+    model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0).fit(x_train,
+                                                                                                             y_train)
 
-  start_time= time.time()
-  model.score(x_test, y_test)
-  end_time= time.time()
+    start_time = time.time()
+    model.score(x_test, y_test)
+    end_time = time.time()
 
-  total_time.append(end_time-start_time)
+    total_time.append(end_time - start_time)
 
-  y_pred= model.predict(x_test)
-  gb_accuracy.append(accuracy_score(y_test, y_pred) * 100)
+    y_pred = model.predict(x_test)
+    gb_accuracy.append(accuracy_score(y_test, y_pred) * 100)
 
-avg_gb_accuracy= np.mean(gb_accuracy)
-avg_time= np.mean(total_time)
+avg_gb_accuracy = np.mean(gb_accuracy)
+avg_time = np.mean(total_time)
 
 print(classification_report(y_test, y_pred))
 
@@ -222,22 +206,22 @@ print("total run time: ", avg_time)
 
 """# **Random Forest Classifier**"""
 
-rf_accuracy=[]
-total_time=[]
+rf_accuracy = []
+total_time = []
 for i in range(5):
-  model = RandomForestClassifier(max_depth=100, random_state=42)
+    model = RandomForestClassifier(max_depth=100, random_state=42)
 
-  start_time= time.time()
-  model.fit(x_test, y_test)
-  end_time= time.time()
+    start_time = time.time()
+    model.fit(x_test, y_test)
+    end_time = time.time()
 
-  total_time.append(end_time-start_time)
+    total_time.append(end_time - start_time)
 
-  y_pred= model.predict(x_test)
-  rf_accuracy.append(accuracy_score(y_test, y_pred) * 100)
+    y_pred = model.predict(x_test)
+    rf_accuracy.append(accuracy_score(y_test, y_pred) * 100)
 
-avg_rf_accuracy= np.mean(rf_accuracy)
-avg_time= np.mean(total_time)
+avg_rf_accuracy = np.mean(rf_accuracy)
+avg_time = np.mean(total_time)
 
 print(classification_report(y_test, y_pred))
 
@@ -246,23 +230,25 @@ print("total run time: ", avg_time)
 
 """# **Support Vector Machine (SVM)**"""
 
-svm_accuracy=[]
-total_time=[]
+svm_accuracy = []
+total_time = []
 for i in range(5):
-  model = svm.SVC()
+    model = svm.SVC()
 
-  start_time= time.time()
-  model.fit(x_test, y_test)
-  end_time= time.time()
+    start_time = time.time()
+    model.fit(x_test, y_test)
+    end_time = time.time()
 
-  total_time.append(end_time-start_time)
-  y_pred= model.predict(x_test)
-  svm_accuracy.append(accuracy_score(y_test, y_pred) * 100)
+    total_time.append(end_time - start_time)
+    y_pred = model.predict(x_test)
+    svm_accuracy.append(accuracy_score(y_test, y_pred) * 100)
 
-avg_svm_accuracy= np.mean(svm_accuracy)
-avg_time= np.mean(total_time)
+avg_svm_accuracy = np.mean(svm_accuracy)
+avg_time = np.mean(total_time)
 
 print(classification_report(y_test, y_pred))
 
 print("accuracy of svm is: ", avg_svm_accuracy)
 print("total run time: ", avg_time)
+
+# start training rnn
