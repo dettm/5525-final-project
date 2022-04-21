@@ -49,6 +49,11 @@ df = pd.read_csv(r'data/spam.csv', encoding="latin-1")
 
 spambase_dataset = pd.read_csv(r'data/spambase_csv.csv', encoding="latin-1")
 
+spambase_dataset = spambase_dataset.rename(columns={"class": "label"})
+label_column = spambase_dataset.pop('label')
+spambase_dataset.insert(0, 'label', label_column)
+spambase_dataset['label'] = spambase_dataset['label'].map({1:'spam', 0 : 'ham'})
+
 df = df.dropna(axis=1)
 df = df.rename(columns={"v1": "label", "v2": "text"})
 df['label'].unique()
@@ -180,7 +185,9 @@ x_train = pd.concat(
     [x_train[['text_length', 'punctuation']].reset_index(drop=True), pd.DataFrame(tfidf_train.toarray())], axis=1)
 x_test = pd.concat([x_test[['text_length', 'punctuation']].reset_index(drop=True), pd.DataFrame(tfidf_test.toarray())], axis=1)
 
-
+# second dataset, comment out these next two lines for first dataset
+spambase_dataset.drop(columns=spambase_dataset.columns[0], axis=1, inplace=True)
+x_train, x_test, y_train, y_test = train_test_split(spambase_dataset, label_column, test_size=0.2, random_state=42)
 # **Gradient Boosting**
 
 ## rather than using just one iteration, using 5 iteration and average the accuracy result for better result
@@ -271,7 +278,7 @@ for li in y_test.values.tolist():
     y += [(0 if li == "ham" else 1)]
 y_test = torch.tensor(y)
 
-n_epochs = 100
+n_epochs = 120
 
 # train the nn
 start_time = time.time()
