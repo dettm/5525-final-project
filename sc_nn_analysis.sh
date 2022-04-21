@@ -1,0 +1,2 @@
+source final_env/bin/activate
+python3 spam_collection_supercomputer.py
