@@ -13,6 +13,8 @@ Original file is located at
 import os
 
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 # import seaborn as sns
 
@@ -269,7 +271,7 @@ for li in y_test.values.tolist():
     y += [(0 if li == "ham" else 1)]
 y_test = torch.tensor(y)
 
-n_epochs = 120
+n_epochs = 200
 
 # train the nn
 start_time = time.time()
