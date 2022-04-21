@@ -101,15 +101,33 @@ def train_feed_forward_classifier(train_exs, train_ys, n_epochs=180, h_dim=100, 
 
 def eval_nn(ffnn, test_x, test_y):
     """
-    Evaluation function intended to be used to evaluate the accuracy of a trained neural network
+    Evaluation function intended to be used to evaluate the accuracy and f1 score (harmonic mean of precision and
+    recall) of a trained neural network. For our task the f1 score is especially important
+
     :param ffnn: the trained feed-forward neural network
     :param test_x: the data that the neural network will be evaluated on
     :param test_y: the gold labels for the test_x dataset
-    :return: the accuracy of the trained neural network
+    :return: accuracy and f1, where the values are the measured values for the accuracy of the model and the f1 score
+    for the spam class
     """
     n_correct = 0
+    n_pos_correct = 0
+    num_pred = 0
+    num_gold = 0
     for i in range(len(test_x)):
+        gold_label = test_y[i]
         pred = ffnn.predict(test_x[i])
-        if pred == test_y[i]:
+        if pred == gold_label:
             n_correct += 1
-    return n_correct/len(test_x)
+        if pred == 1:
+            num_pred += 1
+        if gold_label == 1:
+            num_gold += 1
+        if pred == 1 and gold_label == 1:
+            n_pos_correct += 1
+    acc = float(n_correct) / len(test_x)
+    prec = float(n_pos_correct) / num_pred if num_pred > 0 else 0.0
+    rec = float(n_pos_correct) / num_gold if num_gold > 0 else 0.0
+    f1 = 2 * prec * rec / (prec + rec) if prec > 0 and rec > 0 else 0.0
+
+    return acc, f1

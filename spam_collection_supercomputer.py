@@ -271,7 +271,7 @@ for li in y_test.values.tolist():
     y += [(0 if li == "ham" else 1)]
 y_test = torch.tensor(y)
 
-n_epochs = 200
+n_epochs = 100
 
 # train the nn
 start_time = time.time()
@@ -279,7 +279,7 @@ ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs)
 end_time = time.time()
 print("Took " + str(end_time-start_time) + " seconds to train.")
 
-accuracy = eval_nn(ffnn, x_test, y_test)
-print("Model ran with " + str(accuracy*100) + "% accuracy")
+accuracy, f1 = eval_nn(ffnn, x_test, y_test)
+print("Model scored " + str(accuracy*100) + "% accuracy")
+print("Model got a " + str(f1) + " f1 score")
 
-print("Done")
