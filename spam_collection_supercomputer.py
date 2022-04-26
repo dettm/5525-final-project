@@ -263,13 +263,13 @@ a_writer = csv.writer(a_file)
 f1_file = open("f1.csv", 'w+', newline='')
 f1_writer = csv.writer(f1_file)
 # train the nn with different hyperparameters
-for n_epochs in [5, 10, 20, 60, 120, 200]:
+for n_epochs in [20, 60, 120, 180, 240]:
     a_row = []
     f1_row = []
-    for lr in [0.0002, 0.0005, 0.0007, 0.001, 0.0012]:
-        start_time = time.time()
-        ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs)
-        end_time = time.time()
+    for lr in [0.0002, 0.0004, 0.0005, 0.0006, 0.0007, 0.001, 0.0012]:
+        # start_time = time.time()
+        ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs, init_lr=lr)
+        # end_time = time.time()
 
         accuracy, f1 = eval_nn(ffnn, x_test, y_test)
         a_row += [accuracy]
@@ -279,4 +279,23 @@ for n_epochs in [5, 10, 20, 60, 120, 200]:
 a_file.close()
 f1_file.close()
 
-# note - best found was
+a_file = open("accuracy-2.csv", 'w+', newline='')
+a_writer = csv.writer(a_file)
+f1_file = open("f1-2.csv", 'w+', newline='')
+f1_writer = csv.writer(f1_file)
+# train the nn with different hyperparameters
+for hidden_dim in [5, 10, 15, 20, 25, 35, 50, 60]:
+    a_row = []
+    f1_row = []
+    for batch_size in [5, 10, 20, 50, 100, 200, 500]:
+        # start_time = time.time()
+        ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs=180, init_lr=0.0002, h_dim=hidden_dim, b_size=batch_size)
+        # end_time = time.time()
+
+        accuracy, f1 = eval_nn(ffnn, x_test, y_test)
+        a_row += [accuracy]
+        f1_row += [f1]
+    a_writer.writerow(a_row)
+    f1_writer.writerow(f1_row)
+a_file.close()
+f1_file.close()

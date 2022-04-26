@@ -64,10 +64,12 @@ def train_feed_forward_classifier(train_exs, train_ys, n_epochs=180, h_dim=100, 
     hidden1_dims = h_dim
     initial_learning_rate = init_lr
     batch_size = b_size
+    print("===BEGIN TRAINING===")
     print("Hidden dimension: " + repr(hidden1_dims))
     print("# Epochs: " + repr(num_epochs))
     print("lr: " + repr(initial_learning_rate))
     print("batch size: " + repr(batch_size))
+    print("====================")
     sc = NeuralSentimentClassifier(hidden1_dims, len(train_exs[0]))
     optimizer = optim.Adam(sc.parameters(), lr=initial_learning_rate)
 
@@ -94,7 +96,7 @@ def train_feed_forward_classifier(train_exs, train_ys, n_epochs=180, h_dim=100, 
             # Computes the gradient and takes the optimizer step
             l.backward()
             optimizer.step()
-        print("Total loss on epoch %i: %f" % (epoch+1, total_loss))
+        #print("Total loss on epoch %i: %f" % (epoch+1, total_loss))
 
     return sc
 
