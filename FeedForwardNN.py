@@ -69,6 +69,7 @@ def train_feed_forward_classifier(train_exs, train_ys, n_epochs=180, h_dim=100, 
     print("# Epochs: " + repr(num_epochs))
     print("lr: " + repr(initial_learning_rate))
     print("batch size: " + repr(batch_size))
+    print("embedding length: " + repr(len(train_exs[0])))
     print("====================")
     sc = NeuralSentimentClassifier(hidden1_dims, len(train_exs[0]))
     optimizer = optim.Adam(sc.parameters(), lr=initial_learning_rate)

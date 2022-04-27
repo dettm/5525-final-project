@@ -269,20 +269,21 @@ print("total run time: ", avg_time)
 print("===Training Feed Forward Neural Network===")
 x_train = torch.tensor(x_train.values.tolist())
 x_test = torch.tensor(x_test.values.tolist())
-y = []
-for li in y_train.values.tolist():
-    y += [(0 if li == "ham" else 1)]
-y_train = torch.tensor(y)
-y = []
-for li in y_test.values.tolist():
-    y += [(0 if li == "ham" else 1)]
-y_test = torch.tensor(y)
-
-n_epochs = 120
+# uncomment lines for other dataset
+# y = []
+# for li in y_train.values.tolist():
+#     y += [(0 if li == "ham" else 1)]
+# y_train = torch.tensor(y)
+y_train = torch.tensor(y_train.values.tolist())
+# y = []
+# for li in y_test.values.tolist():
+#     y += [(0 if li == "ham" else 1)]
+# y_test = torch.tensor(y)
+y_test = torch.tensor(y_test.values.tolist())
 
 # train the nn
 start_time = time.time()
-ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs)
+ffnn = train_feed_forward_classifier(x_train, y_train, n_epochs=180, init_lr=0.0003, b_size=10, h_dim=14)
 end_time = time.time()
 print("Took " + str(end_time-start_time) + " seconds to train.")
 
